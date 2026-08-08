@@ -20,6 +20,7 @@ public class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/events").permitAll()
                         .requestMatchers("/api/events/**").permitAll()
+                        .requestMatchers("/api/reservations/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

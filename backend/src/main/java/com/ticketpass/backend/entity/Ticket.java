@@ -70,6 +70,7 @@ public class Ticket {
         return qrCode;
     }
 
+
     public void setQrCode(String qrCode) {
         this.qrCode = qrCode;
     }

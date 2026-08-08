@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: ticketpass-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ticketpass
+      POSTGRES_USER: ticketpass
+      POSTGRES_PASSWORD: ticketpass
+    ports:
+      - "5433:5432"
+    volumes:
+      - ticketpass-postgres-data:/var/lib/postgresql/data
+
+volumes:
+  ticketpass-postgres-data:

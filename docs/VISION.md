@@ -382,6 +382,7 @@ Após o cancelamento:
 
 ```text
 Evento → CANCELADO
+```
 
 Ingressos pagos relacionados ao evento deixam de ser válidos.
 

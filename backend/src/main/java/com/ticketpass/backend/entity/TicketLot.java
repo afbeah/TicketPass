@@ -35,6 +35,10 @@ public class TicketLot {
     @Column(nullable = false)
     private TicketLotStatus status = TicketLotStatus.ACTIVE;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private TicketType ticketType;
+
     public UUID getId() {
         return id;
     }
@@ -93,5 +97,13 @@ public class TicketLot {
 
     public void setStatus(TicketLotStatus status) {
         this.status = status;
+    }
+
+    public TicketType getTicketType() {
+        return ticketType;
+    }
+
+    public void setTicketType(TicketType ticketType) {
+        this.ticketType = ticketType;
     }
 }

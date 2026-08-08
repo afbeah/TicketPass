@@ -21,6 +21,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/events").permitAll()
                         .requestMatchers("/api/events/**").permitAll()
                         .requestMatchers("/api/reservations/**").permitAll()
+                        .requestMatchers("/api/payments/**").permitAll()
                         .anyRequest().authenticated()
                 );
 

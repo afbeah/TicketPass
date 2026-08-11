@@ -4,6 +4,8 @@ import com.ticketpass.backend.config.TicketmasterConfig;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
+import com.ticketpass.backend.dto.ticketmaster.TicketmasterSearchResponse;
+
 @Component
 public class TicketmasterClient {
 
@@ -18,7 +20,7 @@ public class TicketmasterClient {
         this.config = config;
     }
 
-    public String searchEvents(String keyword, String city) {
+    public TicketmasterSearchResponse searchEvents(String keyword, String city) {
         return restClient.get()
                 .uri(
                         config.getBaseUrl() + "/events.json" +
@@ -30,6 +32,6 @@ public class TicketmasterClient {
                         city
                 )
                 .retrieve()
-                .body(String.class);
+                .body(TicketmasterSearchResponse.class);
     }
 }

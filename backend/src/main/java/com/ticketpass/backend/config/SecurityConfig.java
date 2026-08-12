@@ -1,30 +1,26 @@
 package com.ticketpass.backend.config;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jose.jws.JwsAlgorithms;
 import org.springframework.security.web.SecurityFilterChain;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
-import java.util.Collection;
 import java.util.List;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SecurityConfig {
@@ -39,14 +35,21 @@ public class SecurityConfig {
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .oauth2ResourceServer(oauth2 ->
-                        oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthenticationConverter()))
+                        oauth2.jwt(jwt ->
+                                jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
+                        )
                 )
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/auth/login")
+                        .permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/events")
                         .hasRole("ORGANIZER")
+
+                        .requestMatchers(HttpMethod.GET, "/api/events")
+                        .hasAnyRole("CUSTOMER", "ORGANIZER")
 
                         .requestMatchers("/api/events/**")
                         .hasRole("ORGANIZER")
@@ -57,7 +60,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/**")
                         .hasRole("CUSTOMER")
 
-                        .requestMatchers("/api/validation").hasRole("GATEKEEPER")
+                        .requestMatchers("/api/validation")
+                        .hasRole("GATEKEEPER")
 
                         .anyRequest().authenticated()
                 );

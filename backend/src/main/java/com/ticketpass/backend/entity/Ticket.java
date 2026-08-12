@@ -30,6 +30,9 @@ public class Ticket {
     @Column(nullable = false, unique = true)
     private String qrCode;
 
+    @Column(unique = true)
+    private String shareToken;
+
     public UUID getId() {
         return id;
     }
@@ -70,8 +73,15 @@ public class Ticket {
         return qrCode;
     }
 
-
     public void setQrCode(String qrCode) {
         this.qrCode = qrCode;
+    }
+
+    public String getShareToken() {
+        return shareToken;
+    }
+
+    public void setShareToken(String shareToken) {
+        this.shareToken = shareToken;
     }
 }

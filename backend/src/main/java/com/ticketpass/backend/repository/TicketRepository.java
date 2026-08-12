@@ -28,4 +28,6 @@ public interface TicketRepository extends JpaRepository<Ticket, UUID> {
     );
 
     Optional<Ticket> findByQrCode(String qrCode);
+
+    Optional<Ticket> findByShareToken(String shareToken);
 }

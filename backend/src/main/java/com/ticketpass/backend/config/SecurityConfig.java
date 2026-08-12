@@ -57,6 +57,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/payments/**")
                         .hasRole("CUSTOMER")
 
+                        .requestMatchers("/api/validation").hasRole("GATEKEEPER")
+
                         .anyRequest().authenticated()
                 );
 

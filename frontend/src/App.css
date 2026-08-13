@@ -318,3 +318,55 @@ button {
   color: #15151b;
   font-weight: 700;
 }
+
+.event-results-header {
+  margin-top: 56px;
+}
+
+.local-events-section {
+  margin-top: 72px;
+}
+
+.loading-message {
+  color: #8f8f9b;
+  margin-top: 24px;
+}
+
+.local-event-placeholder {
+  height: 220px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: #1d1b29;
+}
+
+.local-event-placeholder strong {
+  font-size: 56px;
+}
+
+.local-event-card .event-card-content > p {
+  margin-bottom: 10px;
+}
+
+.local-event-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 22px;
+}
+
+.local-event-footer strong {
+  font-size: 20px;
+}
+
+.local-event-footer button {
+  min-height: 42px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: #a78bfa;
+  color: #15151b;
+  font-weight: 700;
+}

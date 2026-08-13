@@ -93,15 +93,18 @@ public class EventService {
         return eventRepository.findAll()
                 .stream()
                 .filter(event -> event.getStatus() == EventStatus.PUBLISHED)
-                .flatMap(event ->
+                .map(event ->
                         ticketRepository
                                 .findByTicketLotEventIdAndStatus(
                                         event.getId(),
                                         TicketStatus.AVAILABLE
                                 )
                                 .stream()
+                                .findFirst()
                                 .map(ticket -> toLocalEventResponse(event, ticket))
+                                .orElse(null)
                 )
+                .filter(response -> response != null)
                 .toList();
     }
 

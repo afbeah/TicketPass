@@ -1,19 +1,51 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './App.css'
 import Login from './pages/Login'
 import { searchEvents } from './api/events'
+import { getLocalEvents } from './api/localEvents'
 import type { EventSearchResult } from './types/EventSearchResult'
+import type { LocalEvent } from './types/LocalEvent'
 
 function App() {
   const [keyword, setKeyword] = useState('')
   const [city, setCity] = useState('')
+
   const [events, setEvents] = useState<EventSearchResult[]>([])
+  const [localEvents, setLocalEvents] = useState<LocalEvent[]>([])
+
   const [loading, setLoading] = useState(false)
+  const [loadingLocalEvents, setLoadingLocalEvents] = useState(true)
+
   const [error, setError] = useState('')
+  const [localEventsError, setLocalEventsError] = useState('')
+
   const [showLogin, setShowLogin] = useState(false)
+
   const [token, setToken] = useState(
       localStorage.getItem('ticketpass_token')
   )
+
+  useEffect(() => {
+    async function loadLocalEvents() {
+      try {
+        setLoadingLocalEvents(true)
+        setLocalEventsError('')
+
+        const results = await getLocalEvents()
+
+        setLocalEvents(results)
+      } catch {
+        setLocalEvents([])
+        setLocalEventsError(
+            'Não foi possível carregar os eventos do TicketPass.'
+        )
+      } finally {
+        setLoadingLocalEvents(false)
+      }
+    }
+
+    loadLocalEvents()
+  }, [])
 
   async function handleSearch() {
     if (!keyword.trim() || !city.trim()) {
@@ -120,34 +152,112 @@ function App() {
           {error && <p className="error">{error}</p>}
 
           {events.length > 0 && (
-              <div className="event-grid">
-                {events.map((event) => (
-                    <article className="event-card" key={event.id}>
-                      <img src={event.imageUrl} alt={event.name} />
+              <>
+                <div className="section-header event-results-header">
+                  <span className="eyebrow">DESCOBERTA</span>
+                  <h3>Eventos encontrados</h3>
+                </div>
 
-                      <div className="event-card-content">
-                  <span className="event-date">
-                    {event.date} • {event.time}
-                  </span>
+                <div className="event-grid">
+                  {events.map((event) => (
+                      <article className="event-card" key={event.id}>
+                        <img src={event.imageUrl} alt={event.name} />
 
-                        <h4>{event.name}</h4>
+                        <div className="event-card-content">
+                    <span className="event-date">
+                      {event.date} • {event.time}
+                    </span>
 
-                        <p>
-                          {event.venue} · {event.city}, {event.state}
-                        </p>
+                          <h4>{event.name}</h4>
 
-                        <a
-                            href={event.url}
-                            target="_blank"
-                            rel="noreferrer"
-                        >
-                          Ver evento
-                        </a>
-                      </div>
-                    </article>
-                ))}
-              </div>
+                          <p>
+                            {event.venue} · {event.city}, {event.state}
+                          </p>
+
+                          <a
+                              href={event.url}
+                              target="_blank"
+                              rel="noreferrer"
+                          >
+                            Ver evento
+                          </a>
+                        </div>
+                      </article>
+                  ))}
+                </div>
+              </>
           )}
+
+          <div className="local-events-section">
+            <div className="section-header">
+              <span className="eyebrow">TICKETPASS</span>
+
+              <h3>Eventos disponíveis para compra</h3>
+            </div>
+
+            {loadingLocalEvents && (
+                <p className="loading-message">
+                  Carregando eventos...
+                </p>
+            )}
+
+            {localEventsError && (
+                <p className="error">
+                  {localEventsError}
+                </p>
+            )}
+
+            {!loadingLocalEvents &&
+                !localEventsError &&
+                localEvents.length === 0 && (
+                    <p className="loading-message">
+                      Nenhum evento disponível no momento.
+                    </p>
+                )}
+
+            {localEvents.length > 0 && (
+                <div className="event-grid">
+                  {localEvents.map((event) => (
+                      <article
+                          className="event-card local-event-card"
+                          key={event.ticketId}
+                      >
+                        <div className="local-event-placeholder">
+                    <span className="eyebrow">
+                      TICKETPASS
+                    </span>
+
+                          <strong>🎫</strong>
+                        </div>
+
+                        <div className="event-card-content">
+                    <span className="event-date">
+                      {new Date(event.startDateTime).toLocaleDateString(
+                          'pt-BR'
+                      )}
+                    </span>
+
+                          <h4>{event.name}</h4>
+
+                          <p>{event.location}</p>
+
+                          <p>{event.description}</p>
+
+                          <div className="local-event-footer">
+                            <strong>
+                              R$ {event.ticketPrice.toFixed(2)}
+                            </strong>
+
+                            <button>
+                              Comprar
+                            </button>
+                          </div>
+                        </div>
+                      </article>
+                  ))}
+                </div>
+            )}
+          </div>
         </section>
       </main>
   )

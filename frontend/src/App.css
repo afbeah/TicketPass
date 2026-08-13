@@ -370,3 +370,11 @@ button {
   color: #15151b;
   font-weight: 700;
 }
+
+.success {
+  margin-top: 24px;
+  padding: 14px 18px;
+  border-radius: 8px;
+  background: #193d2a;
+  color: #8ff0b0;
+}

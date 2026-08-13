@@ -3,6 +3,7 @@ import './App.css'
 import Login from './pages/Login'
 import { searchEvents } from './api/events'
 import { getLocalEvents } from './api/localEvents'
+import { createReservation } from './api/reservations'
 import type { EventSearchResult } from './types/EventSearchResult'
 import type { LocalEvent } from './types/LocalEvent'
 
@@ -24,6 +25,9 @@ function App() {
   const [token, setToken] = useState(
       localStorage.getItem('ticketpass_token')
   )
+
+  const [reserving, setReserving] = useState(false)
+  const [reservationMessage, setReservationMessage] = useState('')
 
   useEffect(() => {
     async function loadLocalEvents() {
@@ -65,6 +69,30 @@ function App() {
       setError('Não foi possível buscar os eventos.')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function handlePurchase(ticketId: string) {
+    if (!token) {
+      setShowLogin(true)
+      return
+    }
+
+    try {
+      setReserving(true)
+      setReservationMessage('')
+
+      await createReservation(ticketId)
+
+      setReservationMessage(
+          'Ingresso reservado com sucesso!'
+      )
+    } catch {
+      setReservationMessage(
+          'Não foi possível reservar o ingresso.'
+      )
+    } finally {
+      setReserving(false)
     }
   }
 
@@ -155,13 +183,17 @@ function App() {
               <>
                 <div className="section-header event-results-header">
                   <span className="eyebrow">DESCOBERTA</span>
+
                   <h3>Eventos encontrados</h3>
                 </div>
 
                 <div className="event-grid">
                   {events.map((event) => (
                       <article className="event-card" key={event.id}>
-                        <img src={event.imageUrl} alt={event.name} />
+                        <img
+                            src={event.imageUrl}
+                            alt={event.name}
+                        />
 
                         <div className="event-card-content">
                     <span className="event-date">
@@ -232,9 +264,9 @@ function App() {
 
                         <div className="event-card-content">
                     <span className="event-date">
-                      {new Date(event.startDateTime).toLocaleDateString(
-                          'pt-BR'
-                      )}
+                      {new Date(
+                          event.startDateTime
+                      ).toLocaleDateString('pt-BR')}
                     </span>
 
                           <h4>{event.name}</h4>
@@ -248,14 +280,27 @@ function App() {
                               R$ {event.ticketPrice.toFixed(2)}
                             </strong>
 
-                            <button>
-                              Comprar
+                            <button
+                                onClick={() =>
+                                    handlePurchase(event.ticketId)
+                                }
+                                disabled={reserving}
+                            >
+                              {reserving
+                                  ? 'Reservando...'
+                                  : 'Comprar'}
                             </button>
                           </div>
                         </div>
                       </article>
                   ))}
                 </div>
+            )}
+
+            {reservationMessage && (
+                <p className="success">
+                  {reservationMessage}
+                </p>
             )}
           </div>
         </section>

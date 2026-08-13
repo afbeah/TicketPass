@@ -4,6 +4,11 @@ import Login from './pages/Login'
 import { searchEvents } from './api/events'
 import { getLocalEvents } from './api/localEvents'
 import { createReservation } from './api/reservations'
+import {
+  createPayment,
+  approvePayment,
+} from './api/payments'
+import type { PaymentMethod } from './api/payments'
 import type { EventSearchResult } from './types/EventSearchResult'
 import type { LocalEvent } from './types/LocalEvent'
 
@@ -28,6 +33,12 @@ function App() {
 
   const [reserving, setReserving] = useState(false)
   const [reservationMessage, setReservationMessage] = useState('')
+
+  const [reservationId, setReservationId] = useState<string | null>(null)
+  const [showPayment, setShowPayment] = useState(false)
+
+  const [paymentLoading, setPaymentLoading] = useState(false)
+  const [paymentMessage, setPaymentMessage] = useState('')
 
   useEffect(() => {
     async function loadLocalEvents() {
@@ -81,18 +92,56 @@ function App() {
     try {
       setReserving(true)
       setReservationMessage('')
+      setPaymentMessage('')
 
-      await createReservation(ticketId)
+      const reservation = await createReservation(ticketId)
+
+      setReservationId(reservation.id)
 
       setReservationMessage(
-          'Ingresso reservado com sucesso!'
+          'Ingresso reservado! Escolha uma forma de pagamento.'
       )
+
+      setShowPayment(true)
     } catch {
       setReservationMessage(
           'Não foi possível reservar o ingresso.'
       )
     } finally {
       setReserving(false)
+    }
+  }
+
+  async function handlePayment(method: PaymentMethod) {
+    if (!reservationId) {
+      setPaymentMessage(
+          'Nenhuma reserva disponível para pagamento.'
+      )
+      return
+    }
+
+    try {
+      setPaymentLoading(true)
+      setPaymentMessage('')
+
+      const payment = await createPayment(
+          reservationId,
+          method
+      )
+
+      await approvePayment(payment.id)
+
+      setPaymentMessage(
+          'Pagamento aprovado! Seu ingresso foi confirmado.'
+      )
+
+      setShowPayment(false)
+    } catch {
+      setPaymentMessage(
+          'Não foi possível processar o pagamento.'
+      )
+    } finally {
+      setPaymentLoading(false)
     }
   }
 
@@ -125,6 +174,8 @@ function App() {
                     onClick={() => {
                       localStorage.removeItem('ticketpass_token')
                       setToken(null)
+                      setReservationId(null)
+                      setShowPayment(false)
                     }}
                 >
                   Sair
@@ -189,7 +240,10 @@ function App() {
 
                 <div className="event-grid">
                   {events.map((event) => (
-                      <article className="event-card" key={event.id}>
+                      <article
+                          className="event-card"
+                          key={event.id}
+                      >
                         <img
                             src={event.imageUrl}
                             alt={event.name}
@@ -300,6 +354,52 @@ function App() {
             {reservationMessage && (
                 <p className="success">
                   {reservationMessage}
+                </p>
+            )}
+
+            {showPayment && reservationId && (
+                <section className="payment-section">
+                  <div className="section-header">
+                <span className="eyebrow">
+                  PAGAMENTO
+                </span>
+
+                    <h3>Finalize sua compra</h3>
+                  </div>
+
+                  <p>
+                    Pagamento simulado. Nenhum valor real será cobrado.
+                  </p>
+
+                  <div className="payment-options">
+                    <button
+                        onClick={() =>
+                            handlePayment('PIX')
+                        }
+                        disabled={paymentLoading}
+                    >
+                      {paymentLoading
+                          ? 'Processando...'
+                          : 'Pagar com PIX'}
+                    </button>
+
+                    <button
+                        onClick={() =>
+                            handlePayment('CREDIT_CARD')
+                        }
+                        disabled={paymentLoading}
+                    >
+                      {paymentLoading
+                          ? 'Processando...'
+                          : 'Pagar com cartão'}
+                    </button>
+                  </div>
+                </section>
+            )}
+
+            {paymentMessage && (
+                <p className="success">
+                  {paymentMessage}
                 </p>
             )}
           </div>

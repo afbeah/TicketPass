@@ -7,11 +7,15 @@ interface JwtPayload {
     role: string
 }
 
-interface ReservationResponse {
+export interface ReservationResponse {
     id: string
-    customerId: string
-    ticketId: string
+    customer: {
+        id: string
+    }
+    tickets: unknown[]
     status: string
+    createdAt: string
+    expiresAt: string
 }
 
 export async function createReservation(

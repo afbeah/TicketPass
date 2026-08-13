@@ -8,10 +8,13 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface TicketRepository extends JpaRepository<Ticket, UUID> {
+
+    Optional<Ticket> findByQrCode(String qrCode);
 
     @Modifying
     @Transactional
@@ -27,7 +30,8 @@ public interface TicketRepository extends JpaRepository<Ticket, UUID> {
             @Param("reserved") TicketStatus reserved
     );
 
-    Optional<Ticket> findByQrCode(String qrCode);
-
-    Optional<Ticket> findByShareToken(String shareToken);
+    List<Ticket> findByTicketLotEventIdAndStatus(
+            UUID eventId,
+            TicketStatus status
+    );
 }

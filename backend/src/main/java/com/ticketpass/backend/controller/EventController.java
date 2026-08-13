@@ -2,6 +2,7 @@ package com.ticketpass.backend.controller;
 
 import com.ticketpass.backend.dto.CreateEventRequest;
 import com.ticketpass.backend.dto.EventResponse;
+import com.ticketpass.backend.dto.LocalEventResponse;
 import com.ticketpass.backend.dto.TicketmasterEventResult;
 import com.ticketpass.backend.service.EventService;
 import jakarta.validation.Valid;
@@ -22,8 +23,15 @@ public class EventController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public EventResponse create(@Valid @RequestBody CreateEventRequest request) {
+    public EventResponse create(
+            @Valid @RequestBody CreateEventRequest request
+    ) {
         return eventService.create(request);
+    }
+
+    @GetMapping("/local")
+    public List<LocalEventResponse> findLocalEvents() {
+        return eventService.findLocalEvents();
     }
 
     @GetMapping

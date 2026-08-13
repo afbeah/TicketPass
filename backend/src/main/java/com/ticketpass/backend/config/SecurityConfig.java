@@ -1,6 +1,8 @@
 package com.ticketpass.backend.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -14,13 +16,13 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 import java.util.List;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class SecurityConfig {
@@ -32,46 +34,96 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
+
+                .cors(cors -> {})
+
                 .formLogin(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
+
                 .oauth2ResourceServer(oauth2 ->
                         oauth2.jwt(jwt ->
                                 jwt.jwtAuthenticationConverter(jwtAuthenticationConverter())
                         )
                 )
+
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/error").permitAll()
+                        .requestMatchers("/error")
+                        .permitAll()
 
                         .requestMatchers(HttpMethod.POST, "/api/auth/login")
                         .permitAll()
 
+                        // Busca de eventos externos - pública
+                        .requestMatchers(HttpMethod.GET, "/api/events")
+                        .permitAll()
+
+                        // Eventos TicketPass disponíveis para compra - pública
+                        .requestMatchers(HttpMethod.GET, "/api/events/local")
+                        .permitAll()
+
+                        // Criação de eventos - somente ORGANIZER
                         .requestMatchers(HttpMethod.POST, "/api/events")
                         .hasRole("ORGANIZER")
 
-                        .requestMatchers(HttpMethod.GET, "/api/events")
-                        .hasAnyRole("CUSTOMER", "ORGANIZER")
-
+                        // Demais operações de eventos - somente ORGANIZER
                         .requestMatchers("/api/events/**")
                         .hasRole("ORGANIZER")
 
+                        // Reservas - somente CUSTOMER
                         .requestMatchers("/api/reservations/**")
                         .hasRole("CUSTOMER")
 
+                        // Pagamentos - somente CUSTOMER
                         .requestMatchers("/api/payments/**")
                         .hasRole("CUSTOMER")
 
+                        // Validação de ingresso - somente GATEKEEPER
                         .requestMatchers("/api/validation")
                         .hasRole("GATEKEEPER")
 
-                        .anyRequest().authenticated()
+                        .anyRequest()
+                        .authenticated()
                 );
 
         return http.build();
     }
 
     @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+
+        configuration.setAllowedOrigins(List.of(
+                "http://localhost:5173"
+        ));
+
+        configuration.setAllowedMethods(List.of(
+                "GET",
+                "POST",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS"
+        ));
+
+        configuration.setAllowedHeaders(List.of(
+                "Authorization",
+                "Content-Type"
+        ));
+
+        configuration.setAllowCredentials(true);
+
+        UrlBasedCorsConfigurationSource source =
+                new UrlBasedCorsConfigurationSource();
+
+        source.registerCorsConfiguration("/**", configuration);
+
+        return source;
+    }
+
+    @Bean
     JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtAuthenticationConverter converter = new JwtAuthenticationConverter();
+        JwtAuthenticationConverter converter =
+                new JwtAuthenticationConverter();
 
         converter.setJwtGrantedAuthoritiesConverter(jwt -> {
             String role = jwt.getClaimAsString("role");

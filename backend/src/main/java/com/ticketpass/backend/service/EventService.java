@@ -3,13 +3,17 @@ package com.ticketpass.backend.service;
 import com.ticketpass.backend.client.TicketmasterClient;
 import com.ticketpass.backend.dto.CreateEventRequest;
 import com.ticketpass.backend.dto.EventResponse;
+import com.ticketpass.backend.dto.LocalEventResponse;
 import com.ticketpass.backend.dto.TicketmasterEventResult;
 import com.ticketpass.backend.dto.ticketmaster.TicketmasterEventResponse;
 import com.ticketpass.backend.dto.ticketmaster.TicketmasterSearchResponse;
 import com.ticketpass.backend.entity.Event;
 import com.ticketpass.backend.entity.EventStatus;
+import com.ticketpass.backend.entity.Ticket;
+import com.ticketpass.backend.entity.TicketStatus;
 import com.ticketpass.backend.entity.User;
 import com.ticketpass.backend.repository.EventRepository;
+import com.ticketpass.backend.repository.TicketRepository;
 import com.ticketpass.backend.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,22 +26,27 @@ public class EventService {
     private final EventRepository eventRepository;
     private final UserRepository userRepository;
     private final TicketmasterClient ticketmasterClient;
+    private final TicketRepository ticketRepository;
 
     public EventService(
             EventRepository eventRepository,
             UserRepository userRepository,
-            TicketmasterClient ticketmasterClient
+            TicketmasterClient ticketmasterClient,
+            TicketRepository ticketRepository
     ) {
         this.eventRepository = eventRepository;
         this.userRepository = userRepository;
         this.ticketmasterClient = ticketmasterClient;
+        this.ticketRepository = ticketRepository;
     }
 
     @Transactional
     public EventResponse create(CreateEventRequest request) {
 
         User organizer = userRepository.findById(request.organizerId())
-                .orElseThrow(() -> new IllegalArgumentException("Organizador não encontrado"));
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Organizador não encontrado"
+                ));
 
         if (request.endDateTime().isBefore(request.startDateTime())) {
             throw new IllegalArgumentException(
@@ -79,6 +88,23 @@ public class EventService {
                 .toList();
     }
 
+    public List<LocalEventResponse> findLocalEvents() {
+
+        return eventRepository.findAll()
+                .stream()
+                .filter(event -> event.getStatus() == EventStatus.PUBLISHED)
+                .flatMap(event ->
+                        ticketRepository
+                                .findByTicketLotEventIdAndStatus(
+                                        event.getId(),
+                                        TicketStatus.AVAILABLE
+                                )
+                                .stream()
+                                .map(ticket -> toLocalEventResponse(event, ticket))
+                )
+                .toList();
+    }
+
     private TicketmasterEventResult toTicketmasterEventResult(
             TicketmasterEventResponse event
     ) {
@@ -86,11 +112,13 @@ public class EventService {
                 ? event.images().get(0).url()
                 : null;
 
-        String date = event.dates() != null && event.dates().start() != null
+        String date = event.dates() != null
+                && event.dates().start() != null
                 ? event.dates().start().localDate()
                 : null;
 
-        String time = event.dates() != null && event.dates().start() != null
+        String time = event.dates() != null
+                && event.dates().start() != null
                 ? event.dates().start().localTime()
                 : null;
 
@@ -125,6 +153,22 @@ public class EventService {
                 venue,
                 city,
                 state
+        );
+    }
+
+    private LocalEventResponse toLocalEventResponse(
+            Event event,
+            Ticket ticket
+    ) {
+        return new LocalEventResponse(
+                event.getId(),
+                event.getName(),
+                event.getDescription(),
+                event.getLocation(),
+                event.getStartDateTime(),
+                event.getEndDateTime(),
+                ticket.getId(),
+                ticket.getPrice()
         );
     }
 

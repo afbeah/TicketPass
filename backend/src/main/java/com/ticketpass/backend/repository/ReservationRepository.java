@@ -14,4 +14,9 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             ReservationStatus status,
             LocalDateTime dateTime
     );
+
+    List<Reservation> findByCustomer_IdAndStatus(
+            UUID customerId,
+            ReservationStatus status
+    );
 }

@@ -91,4 +91,36 @@ public class PaymentService {
 
         return paymentRepository.save(payment);
     }
+
+    @Transactional
+    public Payment decline(UUID paymentId) {
+
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Pagamento não encontrado"));
+
+        if (payment.getStatus() != PaymentStatus.PENDING) {
+            throw new IllegalStateException(
+                    "O pagamento não está pendente"
+            );
+        }
+
+        Reservation reservation = payment.getReservation();
+
+        if (reservation.getStatus() != ReservationStatus.ACTIVE) {
+            throw new IllegalStateException(
+                    "A reserva não está ativa"
+            );
+        }
+
+        payment.setStatus(PaymentStatus.DECLINED);
+        payment.setProcessedAt(java.time.LocalDateTime.now());
+        payment.setTransactionId(UUID.randomUUID().toString());
+
+        reservation.setStatus(ReservationStatus.CANCELLED);
+
+        reservationRepository.save(reservation);
+
+        return paymentRepository.save(payment);
+    }
 }

@@ -27,6 +27,11 @@ public class PaymentController {
         return paymentService.create(request);
     }
 
+    @PutMapping("/{paymentId}/decline")
+    public Payment decline(@PathVariable UUID paymentId) {
+        return paymentService.decline(paymentId);
+    }
+
     @PutMapping("/{paymentId}/approve")
     public Payment approve(@PathVariable UUID paymentId) {
         return paymentService.approve(paymentId);

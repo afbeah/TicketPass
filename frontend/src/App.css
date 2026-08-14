@@ -601,3 +601,19 @@ button {
   background: #3d2525;
   color: #ffb4b4;
 }
+
+.share-ticket-button {
+  min-height: 44px;
+  margin-top: 18px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 8px;
+  background: #a78bfa;
+  color: #15151b;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.share-ticket-button:hover {
+  filter: brightness(1.05);
+}

@@ -9,7 +9,10 @@ import {
   createPayment,
   approvePayment,
 } from './api/payments'
-import { getMyTickets } from './api/tickets'
+import {
+  getMyTickets,
+  shareTicket,
+} from './api/tickets'
 
 import type { PaymentMethod } from './api/payments'
 import type { EventSearchResult } from './types/EventSearchResult'
@@ -48,6 +51,8 @@ function App() {
   const [showMyTickets, setShowMyTickets] = useState(false)
   const [loadingTickets, setLoadingTickets] = useState(false)
   const [ticketsError, setTicketsError] = useState('')
+
+  const [shareMessage, setShareMessage] = useState('')
 
   const [showGate, setShowGate] = useState(false)
 
@@ -165,6 +170,7 @@ function App() {
     try {
       setLoadingTickets(true)
       setTicketsError('')
+      setShareMessage('')
 
       const tickets = await getMyTickets()
 
@@ -178,6 +184,24 @@ function App() {
       setShowMyTickets(true)
     } finally {
       setLoadingTickets(false)
+    }
+  }
+
+  async function handleShareTicket(ticketId: string) {
+    try {
+      setShareMessage('')
+
+      const result = await shareTicket(ticketId)
+
+      await navigator.clipboard.writeText(result.shareUrl)
+
+      setShareMessage(
+          'Link do ingresso copiado para a área de transferência.'
+      )
+    } catch {
+      setShareMessage(
+          'Não foi possível gerar o link do ingresso.'
+      )
     }
   }
 
@@ -237,6 +261,7 @@ function App() {
                       setShowMyTickets(false)
                       setShowGate(false)
                       setMyTickets([])
+                      setShareMessage('')
                     }}
                 >
                   Sair
@@ -262,6 +287,12 @@ function App() {
               {ticketsError && (
                   <p className="error">
                     {ticketsError}
+                  </p>
+              )}
+
+              {shareMessage && (
+                  <p className="success">
+                    {shareMessage}
                   </p>
               )}
 
@@ -316,6 +347,15 @@ function App() {
 
                               <code>{ticket.qrCode}</code>
                             </div>
+
+                            <button
+                                className="share-ticket-button"
+                                onClick={() =>
+                                    handleShareTicket(ticket.ticketId)
+                                }
+                            >
+                              Compartilhar ingresso
+                            </button>
                           </div>
                         </article>
                     ))}

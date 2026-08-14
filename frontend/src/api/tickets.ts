@@ -11,6 +11,12 @@ export interface MyTicket {
     qrCode: string
 }
 
+export interface ShareTicketResponse {
+    ticketId: string
+    shareToken: string
+    shareUrl: string
+}
+
 export async function getMyTickets(): Promise<MyTicket[]> {
     const token = localStorage.getItem('ticketpass_token')
 
@@ -26,6 +32,32 @@ export async function getMyTickets(): Promise<MyTicket[]> {
 
     if (!response.ok) {
         throw new Error('Não foi possível carregar os ingressos')
+    }
+
+    return response.json()
+}
+
+export async function shareTicket(
+    ticketId: string
+): Promise<ShareTicketResponse> {
+    const token = localStorage.getItem('ticketpass_token')
+
+    if (!token) {
+        throw new Error('Usuário não autenticado')
+    }
+
+    const response = await fetch(
+        `${API_URL}/api/tickets/${ticketId}/share`,
+        {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        }
+    )
+
+    if (!response.ok) {
+        throw new Error('Não foi possível gerar o link do ingresso')
     }
 
     return response.json()

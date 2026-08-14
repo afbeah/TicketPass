@@ -29,8 +29,23 @@ public class ShareTicketService {
             ticketRepository.save(ticket);
         }
 
+        String shareUrl =
+                "http://localhost:5173/tickets/share/"
+                        + ticket.getShareToken();
+
         return new ShareTicketResponse(
-                "/api/tickets/share/" + ticket.getShareToken()
+                ticket.getId(),
+                ticket.getShareToken(),
+                shareUrl
         );
+    }
+
+    public Ticket findSharedTicket(String shareToken) {
+
+        return ticketRepository.findByShareToken(shareToken)
+                .orElseThrow(() ->
+                        new IllegalArgumentException(
+                                "Ingresso compartilhado não encontrado"
+                        ));
     }
 }

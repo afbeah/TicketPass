@@ -43,7 +43,7 @@ public class TicketService {
                 .toList();
     }
 
-    private MyTicketResponse toResponse(Ticket ticket) {
+    public MyTicketResponse toResponse(Ticket ticket) {
 
         var event = ticket.getTicketLot().getEvent();
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 import Login from './pages/Login'
+import Gate from './pages/Gate'
 import { searchEvents } from './api/events'
 import { getLocalEvents } from './api/localEvents'
 import { createReservation } from './api/reservations'
@@ -47,6 +48,8 @@ function App() {
   const [showMyTickets, setShowMyTickets] = useState(false)
   const [loadingTickets, setLoadingTickets] = useState(false)
   const [ticketsError, setTicketsError] = useState('')
+
+  const [showGate, setShowGate] = useState(false)
 
   useEffect(() => {
     async function loadLocalEvents() {
@@ -189,6 +192,14 @@ function App() {
     )
   }
 
+  if (showGate) {
+    return (
+        <Gate
+            onBack={() => setShowGate(false)}
+        />
+    )
+  }
+
   return (
       <main className="app">
         <header className="header">
@@ -196,9 +207,16 @@ function App() {
 
           <nav>
             <button
-                onClick={() => setShowMyTickets(false)}
+                onClick={() => {
+                  setShowMyTickets(false)
+                  setShowGate(false)
+                }}
             >
               Eventos
+            </button>
+
+            <button onClick={() => setShowGate(true)}>
+              Portaria
             </button>
 
             <button onClick={handleMyTickets}>
@@ -217,6 +235,7 @@ function App() {
                       setReservationId(null)
                       setShowPayment(false)
                       setShowMyTickets(false)
+                      setShowGate(false)
                       setMyTickets([])
                     }}
                 >

@@ -496,3 +496,108 @@ button {
   color: #8f8f9b;
   font-size: 12px;
 }
+
+.gate-page {
+  min-height: calc(100vh - 72px);
+  padding: 64px 6%;
+  display: flex;
+  justify-content: center;
+}
+
+.gate-card {
+  width: min(560px, 100%);
+  height: fit-content;
+  padding: 36px;
+  border: 1px solid #30303a;
+  border-radius: 14px;
+  background: #16161d;
+}
+
+.gate-back {
+  margin-bottom: 42px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #8f8f9b;
+}
+
+.gate-back:hover {
+  color: #ffffff;
+}
+
+.gate-card h2 {
+  margin: 14px 0 10px;
+  font-size: 38px;
+  letter-spacing: -1.5px;
+}
+
+.gate-description {
+  margin: 0 0 30px;
+  color: #8f8f9b;
+  line-height: 1.5;
+}
+
+.gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.gate-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #c7c7d0;
+  font-size: 14px;
+}
+
+.gate-form input {
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #30303a;
+  border-radius: 8px;
+  outline: none;
+  background: #0d0d12;
+  color: #ffffff;
+}
+
+.gate-form input:focus {
+  border-color: #a78bfa;
+}
+
+.gate-validate-button {
+  min-height: 50px;
+  margin-top: 6px;
+  border: 0;
+  border-radius: 8px;
+  background: #a78bfa;
+  color: #15151b;
+  font-weight: 700;
+}
+
+.gate-validate-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.gate-result {
+  margin-top: 28px;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.gate-result p {
+  margin: 8px 0 0;
+}
+
+.gate-result-valid {
+  background: #193d2a;
+  color: #8ff0b0;
+}
+
+.gate-result-already_used,
+.gate-result-invalid,
+.gate-result-wrong_event {
+  background: #3d2525;
+  color: #ffb4b4;
+}
